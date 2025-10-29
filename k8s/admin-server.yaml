@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: petclinic-admin-server
+  labels:
+    app: petclinic-admin-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: petclinic-admin-server
+  template:
+    metadata:
+      labels:
+        app: petclinic-admin-server
+    spec:
+      containers:
+        - name: petclinic-admin-server
+          image: 440744236722.dkr.ecr.ap-south-1.amazonaws.com/petclinic-admin-server:latest
+          ports:
+            - containerPort: 9090
+          env:
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://petclinic-discovery-service:8761/eureka/"
+      imagePullSecrets:
+        - name: ecr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: petclinic-admin-service
+spec:
+  selector:
+    app: petclinic-admin-server
+  ports:
+    - port: 9090
+      targetPort: 9090
+  type: ClusterIP
+

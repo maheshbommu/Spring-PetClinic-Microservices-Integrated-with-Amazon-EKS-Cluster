@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: petclinic-visits-service
+  labels:
+    app: petclinic-visits-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: petclinic-visits-service
+  template:
+    metadata:
+      labels:
+        app: petclinic-visits-service
+    spec:
+      containers:
+        - name: petclinic-visits-service
+          image: 440744236722.dkr.ecr.ap-south-1.amazonaws.com/petclinic-visits-service:latest
+          ports:
+            - containerPort: 8082
+          env:
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://petclinic-discovery-service:8761/eureka/"
+      imagePullSecrets:
+        - name: ecr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: petclinic-visits-service
+spec:
+  selector:
+    app: petclinic-visits-service
+  ports:
+    - port: 8082
+      targetPort: 8082
+  type: ClusterIP
+

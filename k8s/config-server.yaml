@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: petclinic-config-server
+  labels:
+    app: petclinic-config-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: petclinic-config-server
+  template:
+    metadata:
+      labels:
+        app: petclinic-config-server
+    spec:
+      containers:
+        - name: petclinic-config-server
+          image: 440744236722.dkr.ecr.ap-south-1.amazonaws.com/petclinic-config-server:latest
+          ports:
+            - containerPort: 8888
+          env:
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://petclinic-discovery-service:8761/eureka/"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8888
+            initialDelaySeconds: 20
+            periodSeconds: 10
+      imagePullSecrets:
+        - name: ecr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: petclinic-config-service
+spec:
+  selector:
+    app: petclinic-config-server
+  ports:
+    - port: 8888
+      targetPort: 8888
+  type: ClusterIP
+

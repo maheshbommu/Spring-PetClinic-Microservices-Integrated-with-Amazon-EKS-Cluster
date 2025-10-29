@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: petclinic-discovery-server
+  labels:
+    app: petclinic-discovery-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: petclinic-discovery-server
+  template:
+    metadata:
+      labels:
+        app: petclinic-discovery-server
+    spec:
+      containers:
+        - name: petclinic-discovery-server
+          image: 440744236722.dkr.ecr.ap-south-1.amazonaws.com/petclinic-discovery-server:latest
+          ports:
+            - containerPort: 8761
+          env:
+            - name: EUREKA_INSTANCE_HOSTNAME
+              value: petclinic-discovery-service
+            - name: EUREKA_CLIENT_REGISTER_WITH_EUREKA
+              value: "false"
+            - name: EUREKA_CLIENT_FETCH_REGISTRY
+              value: "false"
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://petclinic-discovery-service:8761/eureka/"
+            - name: SERVER_PORT
+              value: "8761"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8761
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8761
+            initialDelaySeconds: 30
+            periodSeconds: 20
+      imagePullSecrets:
+        - name: ecr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: petclinic-discovery-service
+  labels:
+    app: petclinic-discovery-server
+spec:
+  selector:
+    app: petclinic-discovery-server
+  ports:
+    - port: 8761
+      targetPort: 8761
+  type: LoadBalancer
+

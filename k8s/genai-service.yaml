@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: petclinic-genai-service
+  labels:
+    app: petclinic-genai-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: petclinic-genai-service
+  template:
+    metadata:
+      labels:
+        app: petclinic-genai-service
+    spec:
+      containers:
+        - name: petclinic-genai-service
+          image: 440744236722.dkr.ecr.ap-south-1.amazonaws.com/petclinic-genai-service:latest
+          ports:
+            - containerPort: 8090
+          env:
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://petclinic-discovery-service:8761/eureka/"
+      imagePullSecrets:
+        - name: ecr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: petclinic-genai-service
+spec:
+  selector:
+    app: petclinic-genai-service
+  ports:
+    - port: 8090
+      targetPort: 8090
+  type: ClusterIP
+
